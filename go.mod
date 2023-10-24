@@ -10,7 +10,7 @@ require (
 	github.com/khulnasoft-labs/goflags v0.1.11
 	github.com/khulnasoft-labs/gologger v1.1.11
 	github.com/khulnasoft-labs/hmap v0.0.15
-	github.com/khulnasoft-labs/mapcidr v1.1.2
+	github.com/khulnasoft-labs/mapcidr v1.1.4
 	github.com/khulnasoft-labs/ratelimit v0.0.9
 	github.com/khulnasoft-labs/retryabledns v0.0.0-20230722104401-745c1d25618e
 	github.com/khulnasoft-labs/utils v0.0.45
