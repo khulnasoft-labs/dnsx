@@ -13,7 +13,7 @@ require (
 	github.com/khulnasoft-labs/mapcidr v1.1.2
 	github.com/khulnasoft-labs/ratelimit v0.0.9
 	github.com/khulnasoft-labs/retryabledns v0.0.0-20230722104401-745c1d25618e
-	github.com/khulnasoft-labs/utils v0.0.45
+	github.com/khulnasoft-labs/utils v0.0.46
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/miekg/dns v1.1.55
 	github.com/pkg/errors v0.9.1
