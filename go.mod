@@ -7,7 +7,7 @@ require (
 	github.com/khulnasoft-labs/cdncheck v1.0.2
 	github.com/khulnasoft-labs/clistats v0.0.2
 	github.com/khulnasoft-labs/goconfig v0.0.1
-	github.com/khulnasoft-labs/goflags v0.1.11
+	github.com/khulnasoft-labs/goflags v0.1.15
 	github.com/khulnasoft-labs/gologger v1.1.11
 	github.com/khulnasoft-labs/hmap v0.0.15
 	github.com/khulnasoft-labs/mapcidr v1.1.2
