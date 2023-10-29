@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/khulnasoft-labs/asnmap v1.0.0
 	github.com/khulnasoft-labs/cdncheck v1.0.2
-	github.com/khulnasoft-labs/clistats v0.0.2
+	github.com/khulnasoft-labs/clistats v0.0.4
 	github.com/khulnasoft-labs/goconfig v0.0.1
 	github.com/khulnasoft-labs/goflags v0.1.11
 	github.com/khulnasoft-labs/gologger v1.1.11
