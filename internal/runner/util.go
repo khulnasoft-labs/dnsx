@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	fileutil "github.com/khulnasoft-labs/utils/file"
+	fileutil "github.com/khulnasoft-lab/utils/file"
 )
 
 const (

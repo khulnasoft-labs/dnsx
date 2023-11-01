@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/khulnasoft-labs/cdncheck"
-	retryabledns "github.com/khulnasoft-labs/retryabledns"
-	iputil "github.com/khulnasoft-labs/utils/ip"
 	miekgdns "github.com/miekg/dns"
+	"github.com/khulnasoft-lab/cdncheck"
+	retryabledns "github.com/khulnasoft-lab/retryabledns"
+	iputil "github.com/khulnasoft-lab/utils/ip"
 )
 
 // DNSX is structure to perform dns lookups
@@ -48,8 +48,20 @@ func (o *AsnResponse) String() string {
 	return fmt.Sprintf("[%v, %v, %v]", o.AsNumber, o.AsName, o.AsCountry)
 }
 
-func (d *ResponseData) JSON() (string, error) {
-	b, err := json.Marshal(&d)
+type MarshalOption func(d *ResponseData)
+
+func WithoutAllRecords() MarshalOption {
+	return func(d *ResponseData) {
+		d.AllRecords = nil
+	}
+}
+
+func (d *ResponseData) JSON(options ...MarshalOption) (string, error) {
+	dataToMarshal := *d
+	for _, option := range options {
+		option(d)
+	}
+	b, err := json.Marshal(dataToMarshal)
 	return string(b), err
 }
 

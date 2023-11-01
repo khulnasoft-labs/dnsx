@@ -4,13 +4,13 @@ import (
 	"net"
 	"strings"
 
-	"github.com/khulnasoft-labs/dnsx/internal/testutils"
 	"github.com/miekg/dns"
+	"github.com/khulnasoft-lab/dnsx/internal/testutils"
 )
 
 var dnsTestcases = map[string]testutils.TestCase{
-	"DNS A Request":    &dnsARequest{question: "khulnasoft-labs.io", expectedOutput: "khulnasoft-labs.io"},
-	"DNS AAAA Request": &dnsAAAARequest{question: "khulnasoft-labs.io", expectedOutput: "khulnasoft-labs.io"},
+	"DNS A Request":    &dnsARequest{question: "khulnasoft.com", expectedOutput: "khulnasoft.com"},
+	"DNS AAAA Request": &dnsAAAARequest{question: "khulnasoft.com", expectedOutput: "khulnasoft.com"},
 }
 
 type dnsARequest struct {

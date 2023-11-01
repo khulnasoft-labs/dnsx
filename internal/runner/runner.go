@@ -10,20 +10,21 @@ import (
 	"sync"
 	"time"
 
-	asnmap "github.com/khulnasoft-labs/asnmap/libs"
-	"github.com/khulnasoft-labs/clistats"
-	"github.com/khulnasoft-labs/dnsx/libs/dnsx"
-	"github.com/khulnasoft-labs/goconfig"
-	"github.com/khulnasoft-labs/gologger"
-	"github.com/khulnasoft-labs/hmap/store/hybrid"
-	"github.com/khulnasoft-labs/mapcidr"
-	"github.com/khulnasoft-labs/mapcidr/asn"
-	"github.com/khulnasoft-labs/ratelimit"
-	"github.com/khulnasoft-labs/retryabledns"
-	fileutil "github.com/khulnasoft-labs/utils/file"
-	iputil "github.com/khulnasoft-labs/utils/ip"
 	"github.com/miekg/dns"
 	"github.com/pkg/errors"
+	asnmap "github.com/khulnasoft-lab/asnmap/libs"
+	"github.com/khulnasoft-lab/clistats"
+	"github.com/khulnasoft-lab/dnsx/libs/dnsx"
+	"github.com/khulnasoft-lab/goconfig"
+	"github.com/khulnasoft-lab/gologger"
+	"github.com/khulnasoft-lab/hmap/store/hybrid"
+	"github.com/khulnasoft-lab/mapcidr"
+	"github.com/khulnasoft-lab/mapcidr/asn"
+	"github.com/khulnasoft-lab/ratelimit"
+	"github.com/khulnasoft-lab/retryabledns"
+	fileutil "github.com/khulnasoft-lab/utils/file"
+	iputil "github.com/khulnasoft-lab/utils/ip"
+	sliceutil "github.com/khulnasoft-lab/utils/slice"
 )
 
 // Runner is a client for running the enumeration process.
@@ -88,6 +89,9 @@ func New(options *Options) (*Runner, error) {
 	}
 	if options.SOA {
 		questionTypes = append(questionTypes, dns.TypeSOA)
+	}
+	if options.ANY {
+		questionTypes = append(questionTypes, dns.TypeANY)
 	}
 	if options.TXT {
 		questionTypes = append(questionTypes, dns.TypeTXT)
@@ -305,8 +309,15 @@ func (r *Runner) prepareInput() error {
 		r.stats.AddStatic("startedAt", time.Now())
 		r.stats.AddCounter("requests", 0)
 		r.stats.AddCounter("total", uint64(numHosts*len(r.dnsx.Options.QuestionTypes)))
+		r.stats.AddDynamic("summary", makePrintCallback())
 		// nolint:errcheck
-		r.stats.Start(makePrintCallback(), time.Duration(5)*time.Second)
+		r.stats.Start()
+		r.stats.GetStatResponse(time.Second*5, func(s string, err error) error {
+			if err != nil && r.options.Verbose {
+				gologger.Error().Msgf("Could not read statistics: %s\n", err)
+			}
+			return nil
+		})
 	}
 	return nil
 }
@@ -360,9 +371,9 @@ func normalize(data string) string {
 }
 
 // nolint:deadcode
-func makePrintCallback() func(stats clistats.StatisticsClient) {
+func makePrintCallback() func(stats clistats.StatisticsClient) interface{} {
 	builder := &strings.Builder{}
-	return func(stats clistats.StatisticsClient) {
+	return func(stats clistats.StatisticsClient) interface{} {
 		builder.WriteRune('[')
 		startedAt, _ := stats.GetStatic("startedAt")
 		duration := time.Since(startedAt.(time.Time))
@@ -392,7 +403,9 @@ func makePrintCallback() func(stats clistats.StatisticsClient) {
 		builder.WriteRune('\n')
 
 		fmt.Fprintf(os.Stderr, "%s", builder.String())
+		statString := builder.String()
 		builder.Reset()
+		return statString
 	}
 }
 
@@ -658,7 +671,7 @@ func (r *Runner) worker() {
 				hasAxfrData = len(axfrData.DNSData) > 0
 			}
 
-			// if the query type is only AFXR then output only if we have results (ref: https://github.com/khulnasoft-labs/dnsx/issues/230#issuecomment-1256659249)
+			// if the query type is only AFXR then output only if we have results (ref: https://github.com/khulnasoft-lab/dnsx/issues/230#issuecomment-1256659249)
 			if len(r.dnsx.Options.QuestionTypes) == 1 && !hasAxfrData && !r.options.JSON {
 				continue
 			}
@@ -697,12 +710,15 @@ func (r *Runner) worker() {
 		}
 		// if wildcard filtering just store the data
 		if r.options.WildcardDomain != "" {
-			// nolint:errcheck
-			r.storeDNSData(dnsData.DNSData)
+			_ = r.storeDNSData(dnsData.DNSData)
 			continue
 		}
 		if r.options.JSON {
-			jsons, _ := dnsData.JSON()
+			var marshalOptions []dnsx.MarshalOption
+			if r.options.OmitRaw {
+				marshalOptions = append(marshalOptions, dnsx.WithoutAllRecords())
+			}
+			jsons, _ := dnsData.JSON(marshalOptions...)
 			r.outputchan <- jsons
 			continue
 		}
@@ -721,7 +737,6 @@ func (r *Runner) worker() {
 			r.outputRecordType(domain, dnsData.AAAA, dnsData.CDNName, dnsData.ASN)
 		}
 		if r.options.CNAME {
-			// fmt.Println("inside cname", dnsData.ASN)
 			r.outputRecordType(domain, dnsData.CNAME, dnsData.CDNName, dnsData.ASN)
 		}
 		if r.options.PTR {
@@ -734,7 +749,22 @@ func (r *Runner) worker() {
 			r.outputRecordType(domain, dnsData.NS, dnsData.CDNName, dnsData.ASN)
 		}
 		if r.options.SOA {
-			r.outputRecordType(domain, dnsData.SOA, dnsData.CDNName, dnsData.ASN)
+			r.outputRecordType(domain, dnsData.GetSOARecords(), dnsData.CDNName, dnsData.ASN)
+		}
+		if r.options.ANY {
+			allParsedRecords := sliceutil.Merge(
+				dnsData.A,
+				dnsData.AAAA,
+				dnsData.CNAME,
+				dnsData.MX,
+				dnsData.PTR,
+				dnsData.GetSOARecords(),
+				dnsData.NS,
+				dnsData.TXT,
+				dnsData.SRV,
+				dnsData.CAA,
+			)
+			r.outputRecordType(domain, allParsedRecords, dnsData.CDNName, dnsData.ASN)
 		}
 		if r.options.TXT {
 			r.outputRecordType(domain, dnsData.TXT, dnsData.CDNName, dnsData.ASN)
@@ -748,7 +778,7 @@ func (r *Runner) worker() {
 	}
 }
 
-func (r *Runner) outputRecordType(domain string, items []string, cdnName string, asn *dnsx.AsnResponse) {
+func (r *Runner) outputRecordType(domain string, items interface{}, cdnName string, asn *dnsx.AsnResponse) {
 	var details string
 	if cdnName != "" {
 		details = fmt.Sprintf(" [%s]", cdnName)
@@ -756,7 +786,18 @@ func (r *Runner) outputRecordType(domain string, items []string, cdnName string,
 	if asn != nil {
 		details = fmt.Sprintf("%s %s", details, asn.String())
 	}
-	for _, item := range items {
+	var records []string
+
+	switch items := items.(type) {
+	case []string:
+		records = items
+	case []retryabledns.SOA:
+		for _, item := range items {
+			records = append(records, item.NS, item.Mbox)
+		}
+	}
+
+	for _, item := range records {
 		item := strings.ToLower(item)
 		if r.options.ResponseOnly {
 			r.outputchan <- fmt.Sprintf("%s%s", item, details)

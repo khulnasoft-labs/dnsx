@@ -16,7 +16,7 @@ go build -o dnsx_dev$extension ../dnsx
 echo "::endgroup::"
 
 echo "::group::Building latest release of dnsx"
-go build -o dnsx$extension -v github.com/khulnasoft-labs/dnsx/cmd/dnsx
+go build -o dnsx$extension -v github.com/khulnasoft-lab/dnsx/cmd/dnsx
 echo "::endgroup::"
 
 echo 'Starting dnsx functional test'

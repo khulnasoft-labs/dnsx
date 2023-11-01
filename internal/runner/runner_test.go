@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/khulnasoft-labs/hmap/store/hybrid"
+	"github.com/khulnasoft-lab/hmap/store/hybrid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,7 +33,7 @@ func TestRunner_singleDomain_prepareInput(t *testing.T) {
 
 func TestRunner_domainWildCard_prepareInput(t *testing.T) {
 	options := &Options{
-		Domains:  "khulnasoft-labs.io",
+		Domains:  "khulnasoft.com",
 		WordList: "jenkins,beta",
 	}
 	hm, err := hybrid.New(hybrid.DefaultDiskOptions)
@@ -45,7 +45,7 @@ func TestRunner_domainWildCard_prepareInput(t *testing.T) {
 	// call the prepareInput
 	err = r.prepareInput()
 	require.Nil(t, err, "failed to prepare input")
-	expected := []string{"jenkins.khulnasoft-labs.io", "beta.khulnasoft-labs.io"}
+	expected := []string{"jenkins.khulnasoft.com", "beta.khulnasoft.com"}
 	got := []string{}
 	r.hm.Scan(func(k, v []byte) error {
 		got = append(got, string(k))

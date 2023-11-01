@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/khulnasoft-labs/goconfig"
-	"github.com/khulnasoft-labs/goflags"
-	"github.com/khulnasoft-labs/gologger"
-	"github.com/khulnasoft-labs/gologger/levels"
-	fileutil "github.com/khulnasoft-labs/utils/file"
-	updateutils "github.com/khulnasoft-labs/utils/update"
+	"github.com/khulnasoft-lab/goconfig"
+	"github.com/khulnasoft-lab/goflags"
+	"github.com/khulnasoft-lab/gologger"
+	"github.com/khulnasoft-lab/gologger/levels"
+	fileutil "github.com/khulnasoft-lab/utils/file"
+	updateutils "github.com/khulnasoft-lab/utils/update"
 )
 
 const (
@@ -42,10 +42,12 @@ type Options struct {
 	PTR                bool
 	MX                 bool
 	SOA                bool
+	ANY                bool
 	TXT                bool
 	SRV                bool
 	AXFR               bool
 	JSON               bool
+	OmitRaw            bool
 	Trace              bool
 	TraceMaxRecursion  int
 	WildcardThreshold  int
@@ -97,6 +99,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.PTR, "ptr", false, "query PTR record"),
 		flagSet.BoolVar(&options.MX, "mx", false, "query MX record"),
 		flagSet.BoolVar(&options.SOA, "soa", false, "query SOA record"),
+		flagSet.BoolVar(&options.ANY, "any", false, "query ANY record"),
 		flagSet.BoolVar(&options.AXFR, "axfr", false, "query AXFR"),
 		flagSet.BoolVar(&options.CAA, "caa", false, "query CAA record"),
 	)
@@ -124,7 +127,8 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("output", "Output",
 		flagSet.StringVarP(&options.OutputFile, "output", "o", "", "file to write output"),
-		flagSet.BoolVar(&options.JSON, "json", false, "write output in JSONL(ines) format"),
+		flagSet.BoolVarP(&options.JSON, "json", "j", false, "write output in JSONL(ines) format"),
+		flagSet.BoolVarP(&options.OmitRaw, "or", "omit-raw", false, "omit raw dns response from jsonl output"),
 	)
 
 	flagSet.CreateGroup("debug", "Debug",

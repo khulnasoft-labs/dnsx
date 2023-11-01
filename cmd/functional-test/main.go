@@ -11,7 +11,7 @@ import (
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 
-	"github.com/khulnasoft-labs/dnsx/internal/testutils"
+	"github.com/khulnasoft-lab/dnsx/internal/testutils"
 )
 
 var (

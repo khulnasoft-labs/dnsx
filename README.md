@@ -6,11 +6,11 @@
 <h4 align="center">A fast and multi-purpose DNS toolkit designed for running DNS queries</h4>
 
 <p align="center">
-<a href="https://goreportcard.com/report/github.com/khulnasoft-labs/dnsx"><img src="https://goreportcard.com/badge/github.com/khulnasoft-labs/dnsx"></a>
-<a href="https://github.com/khulnasoft-labs/dnsx/issues"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat"></a>
-<a href="https://github.com/khulnasoft-labs/dnsx/releases"><img src="https://img.shields.io/github/release/khulnasoft-labs/dnsx"></a>
+<a href="https://goreportcard.com/report/github.com/khulnasoft-lab/dnsx"><img src="https://goreportcard.com/badge/github.com/khulnasoft-lab/dnsx"></a>
+<a href="https://github.com/khulnasoft-lab/dnsx/issues"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat"></a>
+<a href="https://github.com/khulnasoft-lab/dnsx/releases"><img src="https://img.shields.io/github/release/khulnasoft-lab/dnsx"></a>
 <a href="https://twitter.com/pdiscoveryio"><img src="https://img.shields.io/twitter/follow/pdiscoveryio.svg?logo=twitter"></a>
-<a href="https://discord.gg/khulnasoft-labs"><img src="https://img.shields.io/discord/695645237418131507.svg?logo=discord"></a>
+<a href="https://discord.gg/khulnasoft-lab"><img src="https://img.shields.io/discord/695645237418131507.svg?logo=discord"></a>
 </p>
 
 <p align="center">
@@ -20,14 +20,14 @@
   <a href="#running-dnsx">Running `dnsx`</a> •
   <a href="#wildcard-filtering">Wildcard</a> •
   <a href="#-notes">Notes</a> •
-  <a href="https://discord.gg/khulnasoft-labs">Join Discord</a>
+  <a href="https://discord.gg/khulnasoft-lab">Join Discord</a>
 </p>
 
 
 ---
 
 
-`dnsx` is a fast and multi-purpose DNS toolkit designed for running various probes through the [retryabledns](https://github.com/khulnasoft-labs/retryabledns) library. It supports multiple DNS queries, user supplied resolvers, DNS wildcard filtering like [shuffledns](https://github.com/khulnasoft-labs/shuffledns) etc.
+`dnsx` is a fast and multi-purpose DNS toolkit designed for running various probes through the [retryabledns](https://github.com/khulnasoft-lab/retryabledns) library. It supports multiple DNS queries, user supplied resolvers, DNS wildcard filtering like [shuffledns](https://github.com/khulnasoft-lab/shuffledns) etc.
 
 
 # Features
@@ -52,7 +52,7 @@
 `dnsx` requires **go1.19** to install successfully. Run the following command to install the latest version: 
 
 ```sh
-go install -v github.com/khulnasoft-labs/dnsx/cmd/dnsx@latest
+go install -v github.com/khulnasoft-lab/dnsx/cmd/dnsx@latest
 ```
 
 # Usage
@@ -81,6 +81,7 @@ QUERY:
    -soa    query SOA record
    -axfr   query AXFR
    -caa    query CAA record
+   -any    query ANY record
 
 FILTER:
    -re, -resp          display dns response
@@ -101,7 +102,8 @@ UPDATE:
 
 OUTPUT:
    -o, -output string  file to write output
-   -json               write output in JSONL(ines) format
+   -j, -json           write output in JSONL(ines) format
+   -omit-raw, -or      omit raw dns response from jsonl output
 
 DEBUG:
    -hc, -health-check  run diagnostic check up
@@ -235,7 +237,7 @@ api.hackerone.com [AS13335, CLOUDFLARENET, US]
 support.hackerone.com [AS13335, CLOUDFLARENET, US]
 ```
 
-Probe using [dns status code](https://github.com/khulnasoft-labs/dnsx/wiki/RCODE-ID-VALUE-Mapping) on given list of (sub)domains:
+Probe using [dns status code](https://github.com/khulnasoft-lab/dnsx/wiki/RCODE-ID-VALUE-Mapping) on given list of (sub)domains:
 
 ```console
 subfinder -silent -d hackerone.com | dnsx -silent -rcode noerror,servfail,refused
@@ -378,7 +380,7 @@ dnsx -d google.FUZZ -w tld.txt -resp
  | (_| || | | |\__ \ /  \ 
   \__,_||_| |_||___//_/\_\ v1.1.2
 
-      khulnasoft-labs.io
+      khulnasoft.com
 
 google.de [142.250.194.99] 
 google.com [142.250.76.206] 
@@ -403,7 +405,7 @@ dnsx -l subdomain_list.txt -wd airbnb.com -o output.txt
 
 ### Dnsx as a library
 
-It's possible to use the library directly in your golang programs. The following code snippets is an example of use in golang programs. Please refer to [here](https://pkg.go.dev/github.com/khulnasoft-labs/dnsx@v1.1.0/libs/dnsx) for detailed package configuration and usage.
+It's possible to use the library directly in your golang programs. The following code snippets is an example of use in golang programs. Please refer to [here](https://pkg.go.dev/github.com/khulnasoft-lab/dnsx@v1.1.0/libs/dnsx) for detailed package configuration and usage.
 
 ```go
 package main
@@ -411,7 +413,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/khulnasoft-labs/dnsx/libs/dnsx"
+	"github.com/khulnasoft-lab/dnsx/libs/dnsx"
 )
 
 func main() {
@@ -454,11 +456,11 @@ func main() {
 # 📋 Notes
 
 - As default, `dnsx` checks for **A** record.
-- As default `dnsx` uses Google, Cloudflare, Quad9 [resolver](https://github.com/khulnasoft-labs/dnsx/blob/43af78839e237ea8cbafe571df1ab0d6cbe7f445/libs/dnsx/dnsx.go#L31).
+- As default `dnsx` uses Google, Cloudflare, Quad9 [resolver](https://github.com/khulnasoft-lab/dnsx/blob/43af78839e237ea8cbafe571df1ab0d6cbe7f445/libs/dnsx/dnsx.go#L31).
 - Custom resolver list can be loaded using the `r` flag.
 - Domain name (`wd`) input is mandatory for wildcard elimination.
 - DNS record flag can not be used when using wildcard filtering.
 - DNS resolution (`l`) and DNS brute-forcing (`w`) can't be used together.
-- VPN operators tend to filter high DNS/UDP traffic, therefore the tool might experience packets loss (eg. [Mullvad VPN](https://github.com/khulnasoft-labs/dnsx/issues/221))
+- VPN operators tend to filter high DNS/UDP traffic, therefore the tool might experience packets loss (eg. [Mullvad VPN](https://github.com/khulnasoft-lab/dnsx/issues/221))
 
-`dnsx` is made with 🖤 by the [khulnasoft-labs](https://khulnasoft-labs.io) team.
+`dnsx` is made with 🖤 by the [khulnasoft-lab](https://khulnasoft.com) team.
